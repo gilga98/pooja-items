@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master List Creator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .form-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            color: white;
+        }
+
+        .btn-danger-custom {
+            background: linear-gradient(135deg, var(--accent-color), #c0392b);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger-custom:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--success-color), #229954);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-success-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-details h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .item-details small {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .unit-badge {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .alert-custom {
+            border-radius: 15px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .fade-out {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        .navigation-links {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .navigation-links a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .navigation-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="alert-container"></div>
+    <div class="container">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-list-ul"></i> Master List Creator</h1>
+                <p>Create and manage your master inventory list with items and their units</p>
+            </div>
+
+            <div class="stats-section">
+                <h4><i class="fas fa-chart-bar"></i> Statistics</h4>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3 id="totalItems">0</h3>
+                        <p>Total Items</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 id="uniqueUnits">0</h3>
+                        <p>Unique Units</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 id="lastModified">Never</h3>
+                        <p>Last Modified</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-plus-circle"></i> Add New Item</h3>
+                <form id="itemForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label for="itemName" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="itemName" placeholder="e.g., Turmeric Powder" required>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="itemUnit" class="form-label">Unit</label>
+                            <select class="form-select" id="itemUnit" required>
+                                <option value="">Select Unit</option>
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="g">Grams (g)</option>
+                                <option value="ltr">Liters (ltr)</option>
+                                <option value="ml">Milliliters (ml)</option>
+                                <option value="pcs">Pieces (pcs)</option>
+                                <option value="units">Units</option>
+                                <option value="dozen">Dozen</option>
+                                <option value="packets">Packets</option>
+                                <option value="bottles">Bottles</option>
+                                <option value="cans">Cans</option>
+                                <option value="boxes">Boxes</option>
+                                <option value="custom">Custom Unit</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-grid align-items-end">
+                            <button type="submit" class="btn btn-custom">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-3" id="customUnitRow" style="display: none;">
+                        <div class="col-md-6">
+                            <label for="customUnit" class="form-label">Custom Unit Name</label>
+                            <input type="text" class="form-control" id="customUnit" placeholder="e.g., bundles, rolls">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                    <h3><i class="fas fa-tasks"></i> Current Items</h3>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-success-custom" onclick="exportMasterList()">
+                            <i class="fas fa-download"></i> Export JSON
+                        </button>
+                         <label class="btn btn-custom">
+                            <i class="fas fa-upload"></i> Import JSON
+                            <input type="file" id="importFile" accept=".json" onchange="importMasterList()" style="display: none;">
+                        </label>
+                        <button type="button" class="btn btn-danger-custom" onclick="clearAllItems()">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                <div id="itemsList"></div>
+                <div id="noItemsMessage" class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> No items added yet. Start by adding an item above.
+                </div>
+            </div>
+
+            <div class="navigation-links">
+                <a href="event_creator.html"><i class="fas fa-calendar-plus"></i> Create Events</a>
+                <a href="index.html"><i class="fas fa-file-pdf"></i> Generate PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadMasterList);
+
+        let masterList = [];
+
+        function loadMasterList() {
+            const saved = localStorage.getItem('masterList');
+            masterList = saved ? JSON.parse(saved) : [];
+            updateDisplay();
+        }
+
+        function saveMasterList() {
+            localStorage.setItem('masterList', JSON.stringify(masterList));
+            localStorage.setItem('masterListLastModified', new Date().toISOString());
+            updateDisplay();
+        }
+
+        function updateStats() {
+            document.getElementById('totalItems').textContent = masterList.length;
+            const uniqueUnits = new Set(masterList.map(item => item.unit)).size;
+            document.getElementById('uniqueUnits').textContent = uniqueUnits;
+            const lastModified = localStorage.getItem('masterListLastModified');
+            document.getElementById('lastModified').textContent = lastModified ? new Date(lastModified).toLocaleString() : 'Never';
+        }
+
+        function updateDisplay() {
+            const itemsList = document.getElementById('itemsList');
+            const noItemsMessage = document.getElementById('noItemsMessage');
+            
+            itemsList.innerHTML = '';
+            if (masterList.length === 0) {
+                noItemsMessage.style.display = 'block';
+            } else {
+                noItemsMessage.style.display = 'none';
+                masterList.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-details">
+                                <h5>${item.name}</h5>
+                                <small><i class="fas fa-tag"></i> Item ID: ${item.id}</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="unit-badge">${item.unit}</span>
+                                <button class="btn btn-danger-custom btn-sm" onclick="removeItem(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    itemsList.appendChild(card);
+                });
+            }
+            updateStats();
+        }
+
+        document.getElementById('itemUnit').addEventListener('change', function() {
+            const customUnitRow = document.getElementById('customUnitRow');
+            const customUnitInput = document.getElementById('customUnit');
+            if (this.value === 'custom') {
+                customUnitRow.style.display = 'block';
+                customUnitInput.required = true;
+            } else {
+                customUnitRow.style.display = 'none';
+                customUnitInput.required = false;
+            }
+        });
+
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const itemName = document.getElementById('itemName').value.trim();
+            let unit = document.getElementById('itemUnit').value;
+            
+            if (unit === 'custom') {
+                unit = document.getElementById('customUnit').value.trim();
+            }
+            
+            if (!itemName || !unit) {
+                showAlert('Please fill in all required fields.', 'warning');
+                return;
+            }
+            
+            if (masterList.some(item => item.name.toLowerCase() === itemName.toLowerCase())) {
+                showAlert('This item already exists in the master list.', 'danger');
+                return;
+            }
+            
+            masterList.push({ id: Date.now(), name: itemName, unit: unit });
+            saveMasterList();
+            
+            this.reset();
+            document.getElementById('customUnitRow').style.display = 'none';
+            document.getElementById('customUnit').required = false;
+            
+            showAlert('Item added successfully!', 'success');
+        });
+
+        function removeItem(index) {
+            if (confirm(`Are you sure you want to remove "${masterList[index].name}"?`)) {
+                masterList.splice(index, 1);
+                saveMasterList();
+                showAlert('Item removed.', 'warning');
+            }
+        }
+
+        function clearAllItems() {
+            if (confirm('Are you sure you want to clear ALL items? This action cannot be undone.')) {
+                masterList = [];
+                saveMasterList();
+                showAlert('All items cleared.', 'danger');
+            }
+        }
+
+        function exportMasterList() {
+            if (masterList.length === 0) {
+                showAlert('No items to export.', 'info');
+                return;
+            }
+            const dataStr = JSON.stringify(masterList, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `master_list_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showAlert('Master list exported successfully!', 'success');
+        }
+
+        function importMasterList() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                showAlert('Please select a JSON file to import.', 'info');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData) || !importedData.every(item => item.id && item.name && item.unit)) {
+                       throw new Error('Invalid file format.');
+                    }
+                    
+                    const existingIds = new Set(masterList.map(item => item.id));
+                    const newItems = importedData.filter(item => !existingIds.has(item.id));
+                    
+                    masterList = [...masterList, ...newItems];
+                    saveMasterList();
+                    
+                    showAlert(`Import successful! ${newItems.length} new items added.`, 'success');
+                    fileInput.value = '';
+                } catch (error) {
+                    showAlert('Error importing file: ' + error.message, 'danger');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            const icon = type === 'success' ? 'check-circle' : (type === 'danger' ? 'times-circle' : 'info-circle');
+            alertDiv.className = `alert alert-${type} alert-custom fade-in`;
+            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            container.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.replace('fade-in', 'fade-out');
+                alertDiv.addEventListener('animationend', () => alertDiv.remove());
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

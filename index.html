@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ಪೂಜಾ ಸಾಮಗ್ರಿ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #8e44ad;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); margin: 2rem auto; padding: 2rem; max-width: 1400px; }
+        .header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--secondary-color); }
+        .form-section { background: #f8f9fa; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid var(--secondary-color); }
+        h1, h3, h4 { color: var(--primary-color); }
+
+        .btn-custom { background: linear-gradient(135deg, var(--secondary-color), #7d3c98); color: white; border: none; font-weight: 600; transition: all 0.3s ease; }
+        .btn-success-custom { background: linear-gradient(135deg, var(--success-color), #229954); color: white; font-weight: 600; }
+        .btn-info-custom { background: linear-gradient(135deg, var(--info-color), #2980b9); color: white; font-weight: 600; }
+        
+        .event-card { background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 6px 12px rgba(0,0,0,0.08); border-left: 4px solid var(--secondary-color); transition: all 0.3s ease; }
+        .event-card-header { cursor: pointer; }
+        .event-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
+        .event-card.selected { border-left-color: var(--success-color); background: #f1fdf6; }
+        .event-checkbox { transform: scale(1.5); accent-color: var(--success-color); }
+
+        .consolidated-summary { background: #f8f9fa; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid var(--info-color); }
+        .summary-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        
+        .navigation-links { text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e9ecef; }
+        .navigation-links a { color: var(--secondary-color); text-decoration: none; font-weight: 600; margin: 0 1rem; transition: all 0.3s ease; }
+        .navigation-links a:hover { color: white; }
+
+        .alert-custom { position: fixed; top: 20px; right: 20px; z-index: 1060; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        
+        .modal-body .form-control { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div id="alert-container"></div>
+    <div class="container">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-file-pdf"></i> ಪೂಜಾ ಸಾಮಗ್ರಿ</h1>
+                <p>Select & Edit Event Templates to Generate a Requirements Report</p>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-upload"></i> Load Event Templates</h3>
+                <p>Event data is loaded automatically. Use the button to import additional event JSON files.</p>
+                <label class="btn btn-custom">
+                    <i class="fas fa-calendar-check"></i> Import Event JSON(s)
+                    <input type="file" onchange="importEvents(event)" style="display: none;" accept=".json" multiple>
+                </label>
+            </div>
+
+            <div class="form-section">
+                <h4><i class="fas fa-cogs"></i> PDF Options</h4>
+                 <div class="row">
+                    <div class="col-md-6 mb-2"><input type="text" class="form-control" id="pdfTitle" placeholder="PDF Title (e.g., Wedding Catering Requirements)"></div>
+                    <div class="col-md-6 mb-2"><input type="text" class="form-control" id="clientName" placeholder="Client Name (Optional)"></div>
+                </div>
+                <div class="form-check form-switch fs-5 mt-2">
+                    <input class="form-check-input" type="checkbox" id="includeConsolidated" checked>
+                    <label class="form-check-label" for="includeConsolidated">Include Consolidated Summary</label>
+                </div>
+                <div class="form-check form-switch fs-5">
+                    <input class="form-check-input" type="checkbox" id="includeEventDetails" checked>
+                    <label class="form-check-label" for="includeEventDetails">Include Individual Event Details</label>
+                </div>
+            </div>
+
+            <div id="consolidatedSummary" class="consolidated-summary" style="display: none;">
+                <h4><i class="fas fa-clipboard-list"></i> Real-time Consolidated Summary</h4>
+                <div id="consolidatedItems"></div>
+            </div>
+
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                    <h3><i class="fas fa-tasks"></i> Select Events to Include</h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-info-custom" onclick="toggleAll(true)">Select All</button>
+                        <button class="btn btn-secondary" onclick="toggleAll(false)">Deselect All</button>
+                    </div>
+                </div>
+                <div id="eventsList"></div>
+                <div id="noEventsMessage" class="alert alert-info text-center"><i class="fas fa-info-circle"></i> No events found. Create some or import event JSON files.</div>
+            </div>
+
+             <div class="text-center">
+                 <button type="button" class="btn btn-success-custom btn-lg" onclick="generatePDF()">
+                    <i class="fas fa-file-pdf"></i> Generate PDF Report
+                </button>
+             </div>
+
+            <div class="navigation-links">
+                <a href="master_list_creator.html"><i class="fas fa-list-ul"></i> Master List</a>
+                <a href="event_creator.html"><i class="fas fa-calendar-plus"></i> Create Events</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editEventModalLabel">Edit Event Template</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editEventId">
+            <h5>Event Details</h5>
+            <input type="text" id="editEventName" class="form-control" placeholder="Event Name" required>
+            <input type="date" id="editEventDate" class="form-control">
+            <input type="number" id="editEventGuests" class="form-control" placeholder="Expected Guests">
+            <textarea id="editEventDescription" class="form-control" rows="2" placeholder="Description"></textarea>
+            <hr>
+            <h5>Item Quantities</h5>
+            <div id="editRequirementsList"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="saveEventChanges()"><i class="fas fa-save"></i> Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        let eventsList = [];
+        let selectedEventIds = new Set();
+        let editModal = null;
+        const { jsPDF } = window.jspdf;
+
+        function loadData() {
+            const savedEvents = localStorage.getItem('eventsList');
+            eventsList = savedEvents ? JSON.parse(savedEvents) : [];
+            editModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const eventsListDiv = document.getElementById('eventsList');
+            noEventsMessage.style.display = eventsList.length === 0 ? 'block' : 'none';
+            eventsListDiv.innerHTML = '';
+
+            eventsList.forEach(event => {
+                const isSelected = selectedEventIds.has(event.id);
+                const card = document.createElement('div');
+                card.className = `event-card ${isSelected ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="event-card-header flex-grow-1" onclick="toggleEventSelection(${event.id})">
+                             <div class="d-flex align-items-center">
+                                <input type="checkbox" class="form-check-input event-checkbox me-3" ${isSelected ? 'checked' : ''} readonly>
+                                <div>
+                                    <h4>${event.name}</h4>
+                                    <p class="mb-0 text-muted">Items: ${event.requirements.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="openEditModal(${event.id})">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </button>
+                    </div>`;
+                eventsListDiv.appendChild(card);
+            });
+            updateConsolidatedSummary();
+        }
+        
+        // **NEW** Function to open and populate the edit modal
+        function openEditModal(eventId) {
+            const event = eventsList.find(e => e.id === eventId);
+            if (!event) return;
+
+            document.getElementById('editEventId').value = event.id;
+            document.getElementById('editEventName').value = event.name;
+            document.getElementById('editEventDate').value = event.date || '';
+            document.getElementById('editEventGuests').value = event.guests || '';
+            document.getElementById('editEventDescription').value = event.description || '';
+
+            const requirementsDiv = document.getElementById('editRequirementsList');
+            requirementsDiv.innerHTML = event.requirements.map(req => `
+                <div class="row align-items-center mb-2">
+                    <div class="col-5"><strong>${req.name}</strong></div>
+                    <div class="col-4">
+                        <input type="number" class="form-control form-control-sm" id="edit_qty_${req.itemId}" value="${req.quantity}" min="0" step="any">
+                    </div>
+                    <div class="col-3 text-muted">${req.unit}</div>
+                </div>
+            `).join('');
+
+            editModal.show();
+        }
+
+        // **NEW** Function to save changes from the modal
+        function saveEventChanges() {
+            const eventId = parseInt(document.getElementById('editEventId').value);
+            const eventIndex = eventsList.findIndex(e => e.id === eventId);
+            if (eventIndex === -1) return;
+
+            // Update details
+            const event = eventsList[eventIndex];
+            event.name = document.getElementById('editEventName').value.trim();
+            event.date = document.getElementById('editEventDate').value;
+            event.guests = parseInt(document.getElementById('editEventGuests').value) || null;
+            event.description = document.getElementById('editEventDescription').value.trim();
+
+            // Update quantities
+            event.requirements.forEach(req => {
+                const newQty = parseFloat(document.getElementById(`edit_qty_${req.itemId}`).value);
+                req.quantity = newQty >= 0 ? newQty : 0;
+            });
+
+            // Filter out items with zero quantity
+            event.requirements = event.requirements.filter(req => req.quantity > 0);
+            
+            localStorage.setItem('eventsList', JSON.stringify(eventsList));
+            editModal.hide();
+            showAlert('Event updated successfully!', 'success');
+            updateDisplay();
+        }
+
+        function updateConsolidatedSummary() {
+            const summaryDiv = document.getElementById('consolidatedSummary');
+            const summaryItemsDiv = document.getElementById('consolidatedItems');
+            summaryDiv.style.display = selectedEventIds.size === 0 ? 'none' : 'block';
+            if (selectedEventIds.size === 0) return;
+
+            const consolidated = {};
+            eventsList.filter(e => selectedEventIds.has(e.id)).forEach(event => {
+                event.requirements.forEach(req => {
+                    if (!consolidated[req.itemId]) {
+                        consolidated[req.itemId] = { name: req.name, unit: req.unit, quantity: 0 };
+                    }
+                    consolidated[req.itemId].quantity += req.quantity;
+                });
+            });
+
+            summaryItemsDiv.innerHTML = Object.values(consolidated).map(item => `
+                <div class="summary-item">
+                    <span>${item.name}</span>
+                    <span class="summary-quantity">${item.quantity.toFixed(2)} ${item.unit}</span>
+                </div>`).join('');
+        }
+
+        function toggleEventSelection(eventId) {
+            selectedEventIds.has(eventId) ? selectedEventIds.delete(eventId) : selectedEventIds.add(eventId);
+            updateDisplay();
+        }
+
+        function toggleAll(select) {
+            selectedEventIds = select ? new Set(eventsList.map(e => e.id)) : new Set();
+            updateDisplay();
+        }
+        
+        function importEvents(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            const existingEvents = new Map(eventsList.map(e => [e.name, e]));
+            let filesRead = 0;
+            Array.from(files).forEach(file => {
+                 const reader = new FileReader();
+                 reader.onload = e => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        (Array.isArray(imported) ? imported : [imported]).forEach(event => {
+                            if (event.id && event.name && Array.isArray(event.requirements)) {
+                                existingEvents.set(event.name, event);
+                            }
+                        });
+                    } catch (err) { showAlert(`Failed to read file: ${file.name}`, 'danger'); }
+                    if (++filesRead === files.length) {
+                        eventsList = Array.from(existingEvents.values());
+                        localStorage.setItem('eventsList', JSON.stringify(eventsList));
+                        loadData();
+                        showAlert(`Import complete.`, 'success');
+                    }
+                 };
+                 reader.readAsText(file);
+            });
+        }
+
+        function generatePDF() {
+            if (selectedEventIds.size === 0) {
+                showAlert('Please select at least one event.', 'warning');
+                return;
+            }
+            const doc = new jsPDF();
+            const selectedEvents = eventsList.filter(e => selectedEventIds.has(e.id));
+            const pdfTitle = document.getElementById('pdfTitle').value.trim() || 'Event Requirements Report';
+            const clientName = document.getElementById('clientName').value.trim();
+            doc.setFontSize(20).setFont('helvetica', 'bold');
+            doc.text(pdfTitle, 15, 20);
+            doc.setFontSize(12).setFont('helvetica', 'normal');
+            if (clientName) doc.text(`For: ${clientName}`, 15, 28);
+            doc.setFontSize(10).text(`Report Generated: ${new Date().toLocaleString()}`, 15, 34);
+            let lastY = 40;
+            if (document.getElementById('includeConsolidated').checked) {
+                const consolidated = {};
+                selectedEvents.forEach(event => {
+                    event.requirements.forEach(req => {
+                        if (!consolidated[req.itemId]) {
+                            consolidated[req.itemId] = { name: req.name, unit: req.unit, quantity: 0 };
+                        }
+                        consolidated[req.itemId].quantity += req.quantity;
+                    });
+                });
+                const body = Object.values(consolidated).map(item => [item.name, item.quantity.toFixed(2), item.unit]);
+                doc.autoTable({
+                    startY: lastY,
+                    head: [['Consolidated Item Summary', 'Total Quantity', 'Unit']],
+                    body: body,
+                    theme: 'striped',
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+                lastY = doc.lastAutoTable.finalY + 15;
+            }
+            if (document.getElementById('includeEventDetails').checked) {
+                selectedEvents.forEach(event => {
+                    const body = event.requirements.map(req => [req.name, req.quantity.toFixed(2), req.unit]);
+                    const eventDate = event.date ? `(${new Date(event.date).toLocaleDateString()})` : '';
+                    const eventTitle = `Event: ${event.name} ${eventDate}`;
+                    doc.autoTable({
+                        startY: lastY,
+                        head: [[{ content: eventTitle, colSpan: 3, styles: { halign: 'left', fontStyle: 'bold' } }]],
+                        body: [], theme: 'plain'
+                    });
+                     doc.autoTable({
+                        startY: doc.lastAutoTable.finalY,
+                        head: [['Item', 'Quantity', 'Unit']],
+                        body: body,
+                        theme: 'grid',
+                        headStyles: { fillColor: [142, 68, 173] }
+                    });
+                    lastY = doc.lastAutoTable.finalY + 15;
+                });
+            }
+            doc.save(`${pdfTitle.replace(/\s+/g, '_') || 'report'}.pdf`);
+            showAlert('PDF generated successfully!', 'success');
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            const icon = type === 'success' ? 'check-circle' : (type === 'danger' ? 'times-circle' : 'info-circle');
+            alertDiv.className = `alert alert-${type} alert-custom fade-in`;
+            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            container.appendChild(alertDiv);
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

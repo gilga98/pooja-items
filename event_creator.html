@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Creator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #9b59b6;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+        
+        .header h1, .form-section h3 { color: var(--primary-color); }
+        .header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid var(--secondary-color); }
+        .form-section { background: #f8f9fa; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid var(--secondary-color); }
+
+        .btn-custom { background: linear-gradient(135deg, var(--secondary-color), #8e44ad); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 25px; font-weight: 600; transition: all 0.3s ease; }
+        .btn-custom:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4); color: white; }
+        
+        .btn-danger-custom { background: linear-gradient(135deg, var(--accent-color), #c0392b); color: white; border-radius: 20px; font-weight: 600; }
+        .btn-success-custom { background: linear-gradient(135deg, var(--success-color), #229954); color: white; border-radius: 25px; font-weight: 600; }
+
+        .form-control, .form-select { border-radius: 10px; border: 2px solid #e9ecef; transition: all 0.3s ease; }
+        .form-control:focus, .form-select:focus { border-color: var(--secondary-color); box-shadow: 0 0 0 0.2rem rgba(155, 89, 182, 0.25); }
+
+        .event-card { background: white; border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 6px 20px rgba(0,0,0,0.1); border-left: 4px solid var(--secondary-color); }
+        .item-requirement { background: #f8f9fa; border-radius: 10px; padding: 0.75rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--success-color); }
+        .item-quantity { background: var(--warning-color); color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-weight: 600; }
+        
+        .master-list-status { color: white; padding: 1rem; border-radius: 15px; margin-bottom: 2rem; text-align: center; }
+        .master-list-status.ok { background: linear-gradient(135deg, var(--success-color), #229954); }
+        .master-list-status.error { background: linear-gradient(135deg, var(--accent-color), #c0392b); }
+
+        .requirement-item { background: white; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; border: 2px solid #e9ecef; }
+        
+        .navigation-links { text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e9ecef; }
+        .navigation-links a { color: var(--secondary-color); text-decoration: none; font-weight: 600; margin: 0 1rem; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s ease; }
+        .navigation-links a:hover { background: rgba(255,255,255,0.2); color: white; }
+
+        .alert-custom { position: fixed; top: 20px; right: 20px; z-index: 1050; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .fade-out { animation: fadeOut 0.5s ease-in-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+    </style>
+</head>
+<body>
+    <div id="alert-container"></div>
+    <div class="container">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-calendar-plus"></i> Event Template Creator</h1>
+                <p>Create event templates with self-contained item requirements from your master list</p>
+            </div>
+
+            <div id="masterListStatus"></div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-database"></i> Data Management</h3>
+                <p>Load your master list or existing event templates from JSON files.</p>
+                <div class="d-flex gap-2">
+                     <label class="btn btn-custom">
+                        <i class="fas fa-list-ul"></i> Import Master List
+                        <input type="file" id="importMasterFile" onchange="importMasterList()" style="display: none;" accept=".json">
+                    </label>
+                    <label class="btn btn-custom">
+                        <i class="fas fa-calendar-check"></i> Import Events
+                        <input type="file" id="importEventsFile" onchange="importEvents()" style="display: none;" accept=".json" multiple>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-plus-circle"></i> Create New Event Template</h3>
+                <form id="eventForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" id="eventName" placeholder="Event Name / Template Name" required>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                             <input type="date" class="form-control" id="eventDate">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input type="number" class="form-control" id="eventGuests" placeholder="Expected Guests" min="1">
+                        </div>
+                    </div>
+                     <small class="form-text text-muted">The date is optional and can be set later when generating a PDF.</small>
+                    <div class="mt-3">
+                        <textarea class="form-control" id="eventDescription" rows="2" placeholder="Optional: Brief description of the event"></textarea>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-custom"><i class="fas fa-arrow-right"></i> Proceed to Add Items</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="eventRequirementsSection" class="form-section" style="display: none;">
+                <h3><i class="fas fa-list-check"></i> Add Item Requirements for <strong id="currentEventName"></strong></h3>
+                <div id="requirementsList" class="mb-3"></div>
+                <button type="button" class="btn btn-success-custom" onclick="saveCurrentEvent()"><i class="fas fa-save"></i> Save Event Template</button>
+                <button type="button" class="btn btn-danger-custom" onclick="cancelEventCreation()"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                    <h3><i class="fas fa-calendar-check"></i> Created Events</h3>
+                     <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-success-custom" onclick="exportAllEvents()"><i class="fas fa-download"></i> Export All</button>
+                        <button type="button" class="btn btn-danger-custom" onclick="clearAllEvents()"><i class="fas fa-trash"></i> Clear All</button>
+                    </div>
+                </div>
+                <div id="eventsList"></div>
+                <div id="noEventsMessage" class="alert alert-info text-center"><i class="fas fa-info-circle"></i> No events created yet.</div>
+            </div>
+
+            <div class="navigation-links">
+                <a href="master_list_creator.html"><i class="fas fa-list-ul"></i> Master List</a>
+                <a href="index.html"><i class="fas fa-file-pdf"></i> Generate PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        let masterList = [];
+        let eventsList = [];
+        let currentEvent = null;
+
+        function loadData() {
+            const savedMasterList = localStorage.getItem('masterList');
+            masterList = savedMasterList ? JSON.parse(savedMasterList) : [];
+            
+            const savedEvents = localStorage.getItem('eventsList');
+            eventsList = savedEvents ? JSON.parse(savedEvents) : [];
+            
+            updateMasterListStatus();
+            updateDisplay();
+        }
+
+        function saveEvents() {
+            localStorage.setItem('eventsList', JSON.stringify(eventsList));
+            updateDisplay();
+        }
+
+        function updateMasterListStatus() {
+            const statusDiv = document.getElementById('masterListStatus');
+            if (masterList.length === 0) {
+                statusDiv.className = 'master-list-status error';
+                statusDiv.innerHTML = `<h5><i class="fas fa-exclamation-triangle"></i> No Master List Found</h5>
+                <p>Please <a href="master_list_creator.html" class="text-white">create a master list</a> or import one to begin.</p>`;
+            } else {
+                statusDiv.className = 'master-list-status ok';
+                statusDiv.innerHTML = `<h5><i class="fas fa-check-circle"></i> Master List Loaded</h5>
+                <p>${masterList.length} items available to create event templates.</p>`;
+            }
+        }
+
+        function updateDisplay() {
+            const eventsListDiv = document.getElementById('eventsList');
+            const noEventsMessage = document.getElementById('noEventsMessage');
+            eventsListDiv.innerHTML = '';
+
+            if (eventsList.length === 0) {
+                noEventsMessage.style.display = 'block';
+            } else {
+                noEventsMessage.style.display = 'none';
+                eventsList.forEach((event, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'event-card';
+                    card.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4>${event.name}</h4>
+                                ${event.date ? `<p class="mb-1"><i class="fas fa-calendar"></i> ${new Date(event.date).toLocaleDateString()}</p>` : ''}
+                                ${event.guests ? `<p class="mb-1"><i class="fas fa-users"></i> ${event.guests} guests</p>` : ''}
+                                ${event.description ? `<p class="text-muted"><i class="fas fa-info-circle"></i> ${event.description}</p>` : ''}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-success-custom" onclick="exportEvent(${index})"><i class="fas fa-download"></i></button>
+                                <button class="btn btn-sm btn-danger-custom" onclick="removeEvent(${index})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6>Requirements:</h6>
+                        <div>
+                        ${event.requirements.map(req => `
+                            <div class="item-requirement">
+                                <span>${req.name}</span>
+                                <span class="item-quantity">${req.quantity} ${req.unit}</span>
+                            </div>`).join('')}
+                        </div>
+                    `;
+                    eventsListDiv.appendChild(card);
+                });
+            }
+        }
+        
+        // **NEW** Function to import master list
+        function importMasterList() {
+            const fileInput = document.getElementById('importMasterFile');
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData) || !importedData.every(item => item.id && item.name && item.unit)) {
+                       throw new Error('Invalid or corrupted master list file.');
+                    }
+                    masterList = importedData;
+                    localStorage.setItem('masterList', JSON.stringify(masterList));
+                    loadData(); // Reload page data to reflect the new master list
+                    showAlert('Master list imported successfully!', 'success');
+                } catch (error) {
+                    showAlert('Error importing file: ' + error.message, 'danger');
+                } finally {
+                    fileInput.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (masterList.length === 0) {
+                showAlert('Cannot create event. Please create or import a master list first.', 'danger');
+                return;
+            }
+            
+            const eventName = document.getElementById('eventName').value.trim();
+            if (eventsList.some(event => event.name.toLowerCase() === eventName.toLowerCase())) {
+                showAlert('An event with this name already exists.', 'danger');
+                return;
+            }
+
+            currentEvent = {
+                id: Date.now(),
+                name: eventName,
+                date: document.getElementById('eventDate').value,
+                guests: document.getElementById('eventGuests').value ? parseInt(document.getElementById('eventGuests').value) : null,
+                description: document.getElementById('eventDescription').value.trim(),
+                requirements: []
+            };
+
+            document.getElementById('eventRequirementsSection').style.display = 'block';
+            document.getElementById('currentEventName').textContent = currentEvent.name;
+            createRequirementsList();
+            this.reset();
+            document.getElementById('eventRequirementsSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function createRequirementsList() {
+            const listDiv = document.getElementById('requirementsList');
+            listDiv.innerHTML = masterList.map(item => `
+                <div class="requirement-item row align-items-center">
+                    <div class="col-md-6"><strong>${item.name}</strong></div>
+                    <div class="col-md-4">
+                        <input type="number" class="form-control" id="qty_${item.id}" placeholder="Quantity" min="0" step="any">
+                    </div>
+                    <div class="col-md-2 text-muted">${item.unit}</div>
+                </div>
+            `).join('');
+        }
+
+        function saveCurrentEvent() {
+            if (!currentEvent) return;
+
+            const requirements = [];
+            masterList.forEach(item => {
+                const quantity = parseFloat(document.getElementById(`qty_${item.id}`).value);
+                if (quantity > 0) {
+                    requirements.push({
+                        itemId: item.id,
+                        name: item.name,
+                        unit: item.unit,
+                        quantity: quantity
+                    });
+                }
+            });
+
+            if (requirements.length === 0) {
+                showAlert('Please add at least one item requirement.', 'warning');
+                return;
+            }
+
+            currentEvent.requirements = requirements;
+            eventsList.push(currentEvent);
+            saveEvents();
+            
+            cancelEventCreation();
+            showAlert('Event template created successfully!', 'success');
+        }
+
+        function cancelEventCreation() {
+            document.getElementById('eventRequirementsSection').style.display = 'none';
+            currentEvent = null;
+        }
+
+        function removeEvent(index) {
+            if (confirm(`Are you sure you want to remove the event "${eventsList[index].name}"?`)) {
+                eventsList.splice(index, 1);
+                saveEvents();
+                showAlert('Event removed.', 'warning');
+            }
+        }
+
+        function clearAllEvents() {
+            if (confirm('Are you sure you want to clear ALL events? This action cannot be undone.')) {
+                eventsList = [];
+                saveEvents();
+                showAlert('All events cleared.', 'danger');
+            }
+        }
+
+        function exportEvent(index) {
+            const dataStr = JSON.stringify(eventsList[index], null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `event_${eventsList[index].name.replace(/\s+/g, '_')}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAllEvents() {
+            if (eventsList.length === 0) {
+                showAlert('No events to export.', 'info');
+                return;
+            }
+            const dataStr = JSON.stringify(eventsList, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `all_events_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showAlert('All events exported!', 'success');
+        }
+
+        function importEvents() {
+            const fileInput = document.getElementById('importEventsFile');
+            const files = fileInput.files;
+            if (files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        const eventsToImport = Array.isArray(importedData) ? importedData : [importedData];
+                        
+                        const existingNames = new Set(eventsList.map(event => event.name.toLowerCase()));
+                        const newEvents = eventsToImport.filter(event => 
+                            event.id && event.name && !existingNames.has(event.name.toLowerCase())
+                        );
+                        
+                        eventsList = [...eventsList, ...newEvents];
+                        saveEvents();
+                        showAlert(`Successfully imported ${newEvents.length} new events.`, 'success');
+                    } catch (error) {
+                        showAlert('Error importing file: ' + error.message, 'danger');
+                    }
+                };
+                reader.readAsText(file);
+            });
+            fileInput.value = '';
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            const icon = type === 'success' ? 'check-circle' : (type === 'danger' ? 'times-circle' : 'info-circle');
+            alertDiv.className = `alert alert-${type} alert-custom fade-in`;
+            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            container.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.classList.replace('fade-in', 'fade-out');
+                alertDiv.addEventListener('animationend', () => alertDiv.remove());
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
