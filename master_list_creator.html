@@ -305,20 +305,24 @@
                             <i class="fas fa-upload"></i> Import JSON
                             <input type="file" id="importFile" accept=".json" onchange="importMasterList()" style="display: none;">
                         </label>
-                        <button type="button" class="btn btn-danger-custom" onclick="clearAllItems()">
-                            <i class="fas fa-trash"></i> Clear All
-                        </button>
                     </div>
                 </div>
                 <div id="itemsList"></div>
                 <div id="noItemsMessage" class="alert alert-info text-center">
                     <i class="fas fa-info-circle"></i> No items added yet. Start by adding an item above.
                 </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                    <button type="button" class="btn btn-danger-custom" onclick="clearAllItems()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
             </div>
 
             <div class="navigation-links">
-                <a href="event_creator.html"><i class="fas fa-calendar-plus"></i> Create Events</a>
-                <a href="index.html"><i class="fas fa-file-pdf"></i> Generate PDF</a>
+                <a class="btn btn-outline-secondary" href="event_creator.html"><i class="fas fa-calendar-plus"></i> Create Events</a>
+                <br/>
+                <a class="btn btn-outline-secondary" href="index.html"><i class="fas fa-file-pdf"></i> Generate PDF</a>
             </div>
         </div>
     </div>
