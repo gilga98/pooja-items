@@ -335,7 +335,7 @@
             if (document.getElementById('includeEventDetails').checked) {
                 selectedEvents.forEach(event => {
                     const body = event.requirements.map(req => [req.name, req.quantity.toFixed(2), req.unit]);
-                    const eventTitle = `Event: ${event.name} ${eventDate}`;
+                    const eventTitle = `Event: ${event.name}`;
                     doc.autoTable({
                         startY: lastY,
                         head: [[{ content: eventTitle, colSpan: 3, styles: { halign: 'left', fontStyle: 'bold' } }]],
